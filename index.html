@@ -1,0 +1,4485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOZ_Gestion du pêcheur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { /* Fond de page */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a2e 0%, #2d5f4d 50%, #1a3a2e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { /* Encadré hors onglets et titre */
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        h1 { /* Titre de la page */
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #2d5f4d, #1a3a2e);
+            color: #ffffff;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Onglets */
+        .tabs {
+            display: flex;
+            background: #ffffff;
+            border-bottom: 3px solid #2d5f4d;
+            overflow-x: auto;
+        }
+
+        .tab-button { /* Onglets */
+            flex: 1;
+            padding: 15px 20px;
+            background: #c8e6c9;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            border-right: 1px solid #a5d6a7;
+            color: #1b5e20;
+        }
+
+        .tab-button:hover {
+            background: #a5d6a7;
+        }
+
+        .tab-button.active {
+            background: #2d5f4d;
+            color: #ffffff;
+        }
+
+        /* Styles par onglet */
+        .tab-button.standard.active { /*vert*/
+            background: #1d9f36;
+        }
+
+        .tab-button.summer.active { /*bleu clair*/
+            background: #49d4fb;
+        }
+
+        .tab-button.halloween.active { /*rouge*/
+            background: #e52a2a;
+        }
+
+        .tab-button.bloodlust.active { /*rouge*/
+            background: #e52a2a;
+        }
+
+        .tab-button.horizon.active { /*bleu fort*/
+            background: #07ffe2;
+        }
+
+        /* Contenu des onglets */
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Filtres */
+        .filters {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #2d5f4d;
+        }
+
+        .filters h3 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            color: #2d5f4d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #2d5f4d;
+            border-radius: 5px;
+            background: white;
+            font-size: 1em;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-filter {
+            background: #2d5f4d;
+            color: white;
+        }
+
+        .btn-filter:hover {
+            background: #1a3a2e;
+        }
+
+        .btn-reset {
+            background: #757575;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #616161;
+        }
+
+        /* Statistiques */
+        .stats {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d5f4d;
+        }
+
+        .stat-item .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Tableau */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #2d5f4d;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 3px solid #1a3a2e;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background: #1a3a2e;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle; /* IMPORTANT : aligne tout verticalement au milieu */
+        }
+
+        tr:hover {
+            background: #f1f8e9;
+        }
+
+        tr.hidden {
+            display: none;
+        }
+
+        tr.caught {
+            background: #c8e6c9;
+        }
+
+        /* Checkbox personnalisée */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #2d5f4d;
+        }
+
+        /* Badges pour conditions multiples */
+        .conditions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            min-height: 30px; /* Hauteur minimale pour garder l'alignement */
+            align-items: center; /* Centrer verticalement */
+        }
+
+        .condition-badge {
+            background: #e8f5e9;
+            color: #1b5e20;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            border: 1px solid #a5d6a7;
+            white-space: nowrap; /* Empêcher le retour à la ligne dans le badge */
+        }
+
+        /* Couleurs par état */
+        .condition-badge.sobre {
+            background: #68c0ff;
+            color: #ffffff;
+            border-color: #0077cb;
+        }
+
+        .condition-badge.bourre {
+            background: #ffc0ad;
+            color: #ffffff;
+            border-color: #d9552d;
+        }
+
+        .condition-badge.defonce {
+            background: #e1bee7;
+            color: #6a1b9a;
+            border-color: #ba68c8;
+        }
+
+        /* Couleurs par lieu - exemples pour Standard */
+        .condition-badge.mer-sud {
+            background: #b3e5fc;
+            color: #01579b;
+            border-color: #4fc3f7;
+        }
+
+        .condition-badge.mer-nord {
+            background: #b2ebf2;
+            color: #006064;
+            border-color: #4dd0e1;
+        }
+
+        .condition-badge.grand-lac {
+            background: #c5cae9;
+            color: #1a237e;
+            border-color: #7986cb;
+        }
+
+        .condition-badge.petits-lacs {
+            background: #d1c4e9;
+            color: #4a148c;
+            border-color: #9575cd;
+        }
+
+        .condition-badge.rivieres {
+            background: #bbdefb;
+            color: #0d47a1;
+            border-color: #64b5f6;
+        }
+
+        .condition-badge.bords-de-mer {
+            background: #b2dfdb;
+            color: #004d40;
+            border-color: #4db6ac;
+        }
+
+        .condition-badge.canaux {
+            background: #c8e6c9;
+            color: #1b5e20;
+            border-color: #81c784;
+        }
+
+        /* Couleurs par moment */
+        .condition-badge.aube {
+            background: #fff9c4;
+            color: #f57f17;
+            border-color: #fff176;
+        }
+
+        .condition-badge.journee {
+            background: #ffecb3;
+            color: #ff6f00;
+            border-color: #ffd54f;
+        }
+
+        .condition-badge.crepuscule {
+            background: #ffccbc;
+            color: #bf360c;
+            border-color: #ff8a65;
+        }
+
+        .condition-badge.nuit {
+            background: #d1c4e9;
+            color: #311b92;
+            border-color: #9575cd;
+        }
+
+        /* Couleurs par météo */
+        .condition-badge.degagé {
+            background: #fff9c4;
+            color: #f57f17;
+            border-color: #fff176;
+        }
+
+        .condition-badge.nuageux {
+            background: #cfd8dc;
+            color: #37474f;
+            border-color: #90a4ae;
+        }
+
+        .condition-badge.pluvieux {
+            background: #b3e5fc;
+            color: #01579b;
+            border-color: #4fc3f7;
+        }
+
+        .condition-badge.brumeux {
+            background: #e0e0e0;
+            color: #424242;
+            border-color: #bdbdbd;
+        }
+
+        .condition-badge.neigeux {
+            background: #f5f5f5;
+            color: #616161;
+            border-color: #e0e0e0;
+        }
+
+        .condition-badge.tempêtueux {
+            background: #bcaaa4;
+            color: #3e2723;
+            border-color: #8d6e63;
+        }
+
+        .condition-badge.tout-temps {
+            background: linear-gradient(90deg, #81c784, #64b5f6, #fff176);
+            color: #ffffff;
+            border-color: #66bb6a;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 20px;
+            }
+
+            .tab-button {
+                font-size: 0.9em;
+                padding: 12px 10px;
+            }
+
+            .filter-group {
+                grid-template-columns: 1fr;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐟 Suivi des poissons 🐟</h1>
+
+        <!-- Onglets -->
+        <div class="tabs">
+            <button class="tab-button standard active" onclick="switchTab('standard')">Standard</button>
+            <button class="tab-button summer" onclick="switchTab('summer')">Summer</button>
+            <button class="tab-button halloween" onclick="switchTab('halloween')">Halloween</button>
+            <button class="tab-button bloodlust" onclick="switchTab('bloodlust')">Bloodlust</button>
+            <button class="tab-button horizon" onclick="switchTab('horizon')">Horizon</button>
+        </div>
+
+        <!-- Contenu Standard -->
+        <div id="standard" class="tab-content active">
+            <!-- Statistiques -->
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="stats-standard-caught">0</div>
+                    <div class="label">Capturés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-standard-total">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-standard-percent">0%</div>
+                    <div class="label">Progression</div>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="filters">
+                <h3>🔍 Filtres</h3>
+                <div class="filter-group">
+                    <div>
+                        <label>État</label>
+                        <select id="filter-standard-etat">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Lieu</label>
+                        <select id="filter-standard-lieu">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Moment</label>
+                        <select id="filter-standard-moment">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Météo</label>
+                        <select id="filter-standard-meteo">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn-filter" onclick="applyFilters('standard')">Appliquer les filtres</button>
+                    <button class="btn-reset" onclick="resetFilters('standard')">Réinitialiser</button>
+                </div>
+            </div>
+
+            <!-- Tableau -->
+            <div class="table-container">
+                <table id="table-standard">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('standard', 0)">Nom</th>
+                            <th class="sortable" onclick="sortTable('standard', 1)">N°</th>
+                            <th class="sortable" onclick="sortTable('standard', 2)">Page</th>
+                            <th class="sortable" onclick="sortTable('standard', 3)">Capturé</th>
+                            <th class="sortable" onclick="sortTable('standard', 4)">États</th>
+                            <th class="sortable" onclick="sortTable('standard', 5)">Lieux</th>
+                            <th class="sortable" onclick="sortTable('standard', 6)">Moments</th>
+                            <th class="sortable" onclick="sortTable('standard', 7)">Météos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-standard">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contenu Summer -->
+        <div id="summer" class="tab-content">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="stats-summer-caught">0</div>
+                    <div class="label">Capturés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-summer-total">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-summer-percent">0%</div>
+                    <div class="label">Progression</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h3>🔍 Filtres</h3>
+                <div class="filter-group">
+                    <div>
+                        <label>État</label>
+                        <select id="filter-summer-etat">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Lieu</label>
+                        <select id="filter-summer-lieu">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Moment</label>
+                        <select id="filter-summer-moment">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Météo</label>
+                        <select id="filter-summer-meteo">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn-filter" onclick="applyFilters('summer')">Appliquer les filtres</button>
+                    <button class="btn-reset" onclick="resetFilters('summer')">Réinitialiser</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-summer">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('summer', 0)">Nom</th>
+                            <th class="sortable" onclick="sortTable('summer', 1)">N°</th>
+                            <th class="sortable" onclick="sortTable('summer', 2)">Page</th>
+                            <th>Capturé</th>
+                            <th>État</th>
+                            <th>Lieu</th>
+                            <th>Moment</th>
+                            <th>Météo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-summer">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contenu Halloween -->
+        <div id="halloween" class="tab-content">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="stats-halloween-caught">0</div>
+                    <div class="label">Capturés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-halloween-total">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-halloween-percent">0%</div>
+                    <div class="label">Progression</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h3>🔍 Filtres</h3>
+                <div class="filter-group">
+                    <div>
+                        <label>État</label>
+                        <select id="filter-halloween-etat">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Lieu</label>
+                        <select id="filter-halloween-lieu">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Moment</label>
+                        <select id="filter-halloween-moment">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Météo</label>
+                        <select id="filter-halloween-meteo">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn-filter" onclick="applyFilters('halloween')">Appliquer les filtres</button>
+                    <button class="btn-reset" onclick="resetFilters('halloween')">Réinitialiser</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-halloween">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('halloween', 0)">Nom</th>
+                            <th class="sortable" onclick="sortTable('halloween', 1)">N°</th>
+                            <th class="sortable" onclick="sortTable('halloween', 2)">Page</th>
+                            <th>Capturé</th>
+                            <th>État</th>
+                            <th>Lieu</th>
+                            <th>Moment</th>
+                            <th>Météo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-halloween">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contenu Bloodlust -->
+        <div id="bloodlust" class="tab-content">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="stats-bloodlust-caught">0</div>
+                    <div class="label">Capturés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-bloodlust-total">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-bloodlust-percent">0%</div>
+                    <div class="label">Progression</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h3>🔍 Filtres</h3>
+                <div class="filter-group">
+                    <div>
+                        <label>État</label>
+                        <select id="filter-bloodlust-etat">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Lieu</label>
+                        <select id="filter-bloodlust-lieu">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Moment</label>
+                        <select id="filter-bloodlust-moment">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Météo</label>
+                        <select id="filter-bloodlust-meteo">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn-filter" onclick="applyFilters('bloodlust')">Appliquer les filtres</button>
+                    <button class="btn-reset" onclick="resetFilters('bloodlust')">Réinitialiser</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-bloodlust">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('bloodlust', 0)">Nom</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 1)">N°</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 2)">Page</th>
+                            <th>Capturé</th>
+                            <th>État</th>
+                            <th>Lieu</th>
+                            <th>Moment</th>
+                            <th>Météo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-bloodlust">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contenu Horizon -->
+        <div id="horizon" class="tab-content">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="stats-horizon-caught">0</div>
+                    <div class="label">Capturés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-horizon-total">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="stats-horizon-percent">0%</div>
+                    <div class="label">Progression</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h3>🔍 Filtres</h3>
+                <div class="filter-group">
+                    <div>
+                        <label>État</label>
+                        <select id="filter-horizon-etat">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Lieu</label>
+                        <select id="filter-horizon-lieu">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Moment</label>
+                        <select id="filter-horizon-moment">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Météo</label>
+                        <select id="filter-horizon-meteo">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn-filter" onclick="applyFilters('horizon')">Appliquer les filtres</button>
+                    <button class="btn-reset" onclick="resetFilters('horizon')">Réinitialiser</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-horizon">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('horizon', 0)">Nom</th>
+                            <th class="sortable" onclick="sortTable('horizon', 1)">N°</th>
+                            <th class="sortable" onclick="sortTable('horizon', 2)">Page</th>
+                            <th>Capturé</th>
+                            <th>État</th>
+                            <th>Lieu</th>
+                            <th>Moment</th>
+                            <th>Météo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-horizon">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de données des poissons
+        const fishData = {
+            standard: [
+                {
+                    nom: "Petite Grosse Baleine",
+                    numero: 1,
+                    numero2: "1G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord", "Grand Lac", "Petits Lacs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux"]
+                },
+                {
+                    nom: "Pfister Fish",
+                    numero: 2,
+                    numero2: "1D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Barrycuda",
+                    numero: 3,
+                    numero2: "2G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Angry Fish",
+                    numero: 4,
+                    numero2: "2D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Cristalfish",
+                    numero: 5,
+                    numero2: "3G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières", "Bords de mer"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Le Poulpe Thor",
+                    numero: 6,
+                    numero2: "3D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord", "Bords de mer"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Glowriffy",
+                    numero: 7,
+                    numero2: "4G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord", "Bords de mer"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Carpe Diam",
+                    numero: 8,
+                    numero2: "4D",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Petits Lacs", "Rivières"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Chibhippocampe",
+                    numero: 9,
+                    numero2: "5G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Bords de mer", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Stepafou Moustachou",
+                    numero: 10,
+                    numero2: "5D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Bords de mer", "Mer Sud"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Nuageux"]
+                },
+                {
+                    nom: "Graie Montas",
+                    numero: 11,
+                    numero2: "6G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac"],
+                    moment: ["Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Carpotresor",
+                    numero: 12,
+                    numero2: "6D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube"],
+                    meteo: ["Nuageux", "Tempêtueux"]
+                },
+                {
+                    nom: "Hypnoisson",
+                    numero: 13,
+                    numero2: "7G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Meduze De Fe De La Morre Qui Tu",
+                    numero: 14,
+                    numero2: "7D",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Marine",
+                    numero: 15,
+                    numero2: "8G",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Purple Omen",
+                    numero: 16,
+                    numero2: "8D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Bigornoob",
+                    numero: 17,
+                    numero2: "9G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Le Sunny",
+                    numero: 18,
+                    numero2: "9D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Croaky Froggy",
+                    numero: 19,
+                    numero2: "10G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Petits Lacs", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Chaxo",
+                    numero: 20,
+                    numero2: "10D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Grand Lac", "Canaux"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Morpheus Somnolent",
+                    numero: 21,
+                    numero2: "11G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Portinet",
+                    numero: 22,
+                    numero2: "11D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord", "Mer Sud"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "La Clebsouille",
+                    numero: 23,
+                    numero2: "12G",
+                    etat: ["Défoncé"],
+                    lieu: ["Canaux", "Petits Lacs", "Rivières"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Fichouette",
+                    numero: 24,
+                    numero2: "12D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord", "Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Merou Colerique Tachete",
+                    numero: 25,
+                    numero2: "13G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Chromabranchus Virosa",
+                    numero: 26,
+                    numero2: "13D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Mossiferne",
+                    numero: 27,
+                    numero2: "14G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux", "Mer Sud"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Figel",
+                    numero: 28,
+                    numero2: "14D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Rosailee",
+                    numero: 29,
+                    numero2: "15G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Dégagé"]
+                },
+                {
+                    nom: "Le Perlea",
+                    numero: 30,
+                    numero2: "15D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Grand Lac", "Rivières"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Sanajvit",
+                    numero: 31,
+                    numero2: "16G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Simone",
+                    numero: 32,
+                    numero2: "16D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Axowin Dragonnet Splendide",
+                    numero: 33,
+                    numero2: "17G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord", "Bords de mer"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Fire Plouf",
+                    numero: 34,
+                    numero2: "17D",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières", "Petits Lacs"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Aquatic Wood Runner",
+                    numero: 35,
+                    numero2: "18G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Grand Lac"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Squalopoisson",
+                    numero: 36,
+                    numero2: "18D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Grand Lac", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux"]
+                },
+                {
+                    nom: "Rastortue",
+                    numero: 37,
+                    numero2: "19G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Bords de mer"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Voile Souvenir",
+                    numero: 38,
+                    numero2: "19D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Petits Lacs", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux", "Brumeux"]
+                },
+                {
+                    nom: "Sandre Florale",
+                    numero: 39,
+                    numero2: "20G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Grand Lac", "Canaux"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Pinky Punky Fish",
+                    numero: 40,
+                    numero2: "20D",
+                    etat: ["Défoncé"],
+                    lieu: ["Rivières", "Grand Lac", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "Electropoulpe",
+                    numero: 41,
+                    numero2: "21G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Verdipoulpe",
+                    numero: 42,
+                    numero2: "21D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord", "Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "Pilulieu",
+                    numero: 43,
+                    numero2: "22G",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Mer Sud"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Orions Star",
+                    numero: 44,
+                    numero2: "22D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Grand Lac", "Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Globenciel",
+                    numero: 45,
+                    numero2: "23G",
+                    etat: ["Bourré"],
+                    lieu: ["Rivières", "Bords de mer"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Poissoncisson",
+                    numero: 46,
+                    numero2: "23D",
+                    etat: ["Bourré"],
+                    lieu: ["Canaux", "Rivières"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Le Pipoulpe",
+                    numero: 47,
+                    numero2: "24G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Bords de mer"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Luminosa",
+                    numero: 48,
+                    numero2: "24D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux"]
+                },
+                {
+                    nom: "Poulamar",
+                    numero: 49,
+                    numero2: "25G",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Electraie",
+                    numero: 50,
+                    numero2: "25D",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Rivières"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Bolingbroke Fish",
+                    numero: 51,
+                    numero2: "26G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Nebulith",
+                    numero: 52,
+                    numero2: "26D",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Mariusson",
+                    numero: 53,
+                    numero2: "27G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Bords de mer"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Dobbry Rok",
+                    numero: 54,
+                    numero2: "27D",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Ablyssus",
+                    numero: 55,
+                    numero2: "28G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Zirvine Dracopis",
+                    numero: 56,
+                    numero2: "28D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Gobie Vaseux",
+                    numero: 57,
+                    numero2: "29G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux", "Brumeux"]
+                },
+                {
+                    nom: "Trashark",
+                    numero: 58,
+                    numero2: "29D",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Akumaaaa",
+                    numero: 59,
+                    numero2: "30G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Lantrole",
+                    numero: 60,
+                    numero2: "30D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "La Crevette Arc En Ciel",
+                    numero: 61,
+                    numero2: "31G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Acuattus",
+                    numero: 62,
+                    numero2: "31D",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Nuageux", "Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Crabantine",
+                    numero: 63,
+                    numero2: "32G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Blobo Acanthus",
+                    numero: 64,
+                    numero2: "32D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Fausse Meduse Haploida",
+                    numero: 65,
+                    numero2: "33G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Bi Queue",
+                    numero: 66,
+                    numero2: "33D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Grand Lac"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Pluvieux"]
+                },
+                {
+                    nom: "Reggaetoad",
+                    numero: 67,
+                    numero2: "34G",
+                    etat: ["Défoncé"],
+                    lieu: ["Grand Lac", "Petits Lacs", "Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Hippocon",
+                    numero: 68,
+                    numero2: "34D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Piranha Clown",
+                    numero: 69,
+                    numero2: "35G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Petits Lacs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Coelacant",
+                    numero: 70,
+                    numero2: "35D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Grand Lac"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Flannochet Zebre",
+                    numero: 71,
+                    numero2: "36G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux", "Mer Sud"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Baleine Iris",
+                    numero: 72,
+                    numero2: "36D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Crabe Rubis",
+                    numero: 73,
+                    numero2: "37G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Carpe Emeraude",
+                    numero: 74,
+                    numero2: "37D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Grand Lac", "Petits Lacs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux"]
+                },
+                {
+                    nom: "Calmar Amethyste",
+                    numero: 75,
+                    numero2: "38G",
+                    etat: ["Bourré"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Meduse Ambre",
+                    numero: 76,
+                    numero2: "38D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux", "Mer Sud"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Etoile Diamant",
+                    numero: 77,
+                    numero2: "39G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Tortue Saphir",
+                    numero: 78,
+                    numero2: "39D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Brumeux", "Pluvieux", "Brumeux"]
+                },
+                {
+                    nom: "Twinfish",
+                    numero: 79,
+                    numero2: "40G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Petits Lacs", "Canaux"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Pluvieux", "Neigeux"]
+                },
+                {
+                    nom: "Happygloby",
+                    numero: 80,
+                    numero2: "40D",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Toxiglue",
+                    numero: 81,
+                    numero2: "41G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Bords de mer", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule"],
+                    meteo: ["Nuageux", "Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Octoleon",
+                    numero: 82,
+                    numero2: "41D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux", "Brumeux"]
+                },
+                {
+                    nom: "Cryscrab",
+                    numero: 83,
+                    numero2: "42G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé"]
+                },
+                {
+                    nom: "Rainbowfish",
+                    numero: 84,
+                    numero2: "42D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Lumiscale",
+                    numero: 85,
+                    numero2: "43G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Petits Lacs"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Athenais La Meduse Papillon",
+                    numero: 86,
+                    numero2: "43D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud", "Mer Nord"],
+                    moment: ["Nuit"],
+                    meteo: ["Nuageux", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Uhane",
+                    numero: 87,
+                    numero2: "44G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Rubis Des Mers",
+                    numero: 88,
+                    numero2: "44D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Canaux"],
+                    moment: ["Aube"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Lumeine",
+                    numero: 89,
+                    numero2: "45G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Discoelacanthe",
+                    numero: 90,
+                    numero2: "45D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Cochon De Mer",
+                    numero: 91,
+                    numero2: "46G",
+                    etat: ["Bourré"],
+                    lieu: ["Grand Lac"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Pluvieux", "Dégagé"]
+                },
+                {
+                    nom: "Zeponge De Mer",
+                    numero: 92,
+                    numero2: "46D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Goldecrevisse",
+                    numero: 93,
+                    numero2: "47G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Etoile De Merdeeeee Aie Elle Ma Mordu",
+                    numero: 94,
+                    numero2: "47D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Dégagé"]
+                },
+                {
+                    nom: "Exocet Bleu",
+                    numero: 95,
+                    numero2: "48G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Bords de mer"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Poulpitrol",
+                    numero: 96,
+                    numero2: "48D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Grand Lac"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Nimo",
+                    numero: 97,
+                    numero2: "49G",
+                    etat: ["Bourré"],
+                    lieu: ["Grand Lac", "Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Tetrotox",
+                    numero: 98,
+                    numero2: "49D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Neigeux", "Tempêtueux", "Pluvieux"]
+                },
+                {
+                    nom: "Lapollo",
+                    numero: 99,
+                    numero2: "50G",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Kronk Terreur",
+                    numero: 100,
+                    numero2: "50D",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Poulpe Eclair",
+                    numero: 101,
+                    numero2: "51G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Lotushell",
+                    numero: 102,
+                    numero2: "51D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Icecrevisse",
+                    numero: 103,
+                    numero2: "52G",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs"],
+                    moment: ["Aube", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Frostoad",
+                    numero: 104,
+                    numero2: "52D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Carpxolotl",
+                    numero: 105,
+                    numero2: "53G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Petits Lacs"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Clearcrab",
+                    numero: 106,
+                    numero2: "53D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Wooden Flight",
+                    numero: 107,
+                    numero2: "54G",
+                    etat: ["Bourré"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Horaine Argentee",
+                    numero: 108,
+                    numero2: "54D",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Doradonut",
+                    numero: 109,
+                    numero2: "55G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Oursin Kipik",
+                    numero: 110,
+                    numero2: "55D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Silver Moula",
+                    numero: 111,
+                    numero2: "56G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Golden Huitre",
+                    numero: 112,
+                    numero2: "56D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Brumeux", "Nuageux", "Pluvieux"]
+                },
+                {
+                    nom: "Crevette Alecto",
+                    numero: 113,
+                    numero2: "57G",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Limasse",
+                    numero: 114,
+                    numero2: "57D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Crépuscule"],
+                    meteo: ["Dégagé", "Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Poimousse",
+                    numero: 115,
+                    numero2: "58G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux", "Pluvieux"]
+                },
+                {
+                    nom: "Goofysh",
+                    numero: 116,
+                    numero2: "58D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Carpe Feur",
+                    numero: 117,
+                    numero2: "59G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Carpe A Jouer",
+                    numero: 118,
+                    numero2: "59D",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Homard Indigo Saxicole",
+                    numero: 119,
+                    numero2: "60G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Flabellina",
+                    numero: 120,
+                    numero2: "60D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Comtecombre De Mer",
+                    numero: 121,
+                    numero2: "61G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Noctiscale",
+                    numero: 122,
+                    numero2: "61D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Luninja",
+                    numero: 123,
+                    numero2: "62G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Saumon",
+                    numero: 124,
+                    numero2: "62D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Rivières"],
+                    moment: ["Aube", "Crépuscule"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Greg",
+                    numero: 125,
+                    numero2: "63G",
+                    etat: ["Défoncé"],
+                    lieu: ["Rivières", "Canaux"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Pleutrisson",
+                    numero: 126,
+                    numero2: "63D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Mousseton",
+                    numero: 127,
+                    numero2: "64G",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Cocqueluchard A Crete Rouge",
+                    numero: 128,
+                    numero2: "64D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Bar A Thym",
+                    numero: 129,
+                    numero2: "65G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Petits Lacs", "Rivières", "Canaux"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Carassin Tropical",
+                    numero: 130,
+                    numero2: "65D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Demoiselle Maraichere",
+                    numero: 131,
+                    numero2: "66G",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Kokoro Spumeux",
+                    numero: 132,
+                    numero2: "66D",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Origafish",
+                    numero: 133,
+                    numero2: "67G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Zeta Membraneux",
+                    numero: 134,
+                    numero2: "67D",
+                    etat: ["Bourré"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "Dragon Des Mers",
+                    numero: 135,
+                    numero2: "68G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Mi-Octo Grandmax",
+                    numero: 136,
+                    numero2: "68D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Crobrail",
+                    numero: 137,
+                    numero2: "69G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Draquaticus",
+                    numero: 138,
+                    numero2: "69D",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Abherus Le Dentu",
+                    numero: 139,
+                    numero2: "70G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Mur Haine",
+                    numero: 140,
+                    numero2: "70D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Tyrannus Piscis",
+                    numero: 141,
+                    numero2: "71G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "Grincheux Cramoisi",
+                    numero: 142,
+                    numero2: "71D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Blogogloblo",
+                    numero: 143,
+                    numero2: "72G",
+                    etat: ["Défoncé"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Fishy Duck",
+                    numero: 144,
+                    numero2: "72D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Canaux"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "La Sardynamite",
+                    numero: 145,
+                    numero2: "73G",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Fluroralia Nocturne",
+                    numero: 146,
+                    numero2: "73D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Petit Poulpe Royal",
+                    numero: 147,
+                    numero2: "74G",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Tortue Imperiale",
+                    numero: 148,
+                    numero2: "74D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Tort Aily",
+                    numero: 149,
+                    numero2: "75G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Mer Sud"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Draceen",
+                    numero: 150,
+                    numero2: "75D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Journée"],
+                    meteo: ["Pluvieux", "Nuageux", "Tempêtueux"]
+                },
+                {
+                    nom: "Tribow",
+                    numero: 151,
+                    numero2: "76G",
+                    etat: ["Bourré"],
+                    lieu: ["Bords de mer", "Mer Nord"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Pluvieux", "Tempêtueux"]
+                },
+                {
+                    nom: "Angryd O",
+                    numero: 152,
+                    numero2: "76D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Petit Dragon Des Mers",
+                    numero: 153,
+                    numero2: "77G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Langostazul",
+                    numero: 154,
+                    numero2: "77D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Happyd O",
+                    numero: 155,
+                    numero2: "78G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Le Pasne",
+                    numero: 156,
+                    numero2: "78D",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs", "Canaux"],
+                    moment: ["Journée"],
+                    meteo: ["Brumeux", "Nuageux"]
+                },
+                {
+                    nom: "Chelonienseparables",
+                    numero: 157,
+                    numero2: "79G",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Yuko",
+                    numero: 158,
+                    numero2: "79D",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Reinette",
+                    numero: 159,
+                    numero2: "80G",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Arguyere Bicephale",
+                    numero: 160,
+                    numero2: "80D",
+                    etat: ["Bourré"],
+                    lieu: ["Rivières", "Canaux"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Berger De Floride",
+                    numero: 161,
+                    numero2: "81G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Elicie Californien",
+                    numero: 162,
+                    numero2: "81D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Exocet Colibri",
+                    numero: 163,
+                    numero2: "82G",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Exocet Oriental",
+                    numero: 164,
+                    numero2: "82D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Exocet Sardine",
+                    numero: 165,
+                    numero2: "83G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Finette",
+                    numero: 166,
+                    numero2: "83D",
+                    etat: ["Bourré"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Hampe-Noire Albinos",
+                    numero: 167,
+                    numero2: "84G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Iridesce Cyclope",
+                    numero: 168,
+                    numero2: "84D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Jolicoeur Smaragdin",
+                    numero: 169,
+                    numero2: "85G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Mouchi Papillon",
+                    numero: 170,
+                    numero2: "85D",
+                    etat: ["Sobre"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Perche Leopard",
+                    numero: 171,
+                    numero2: "86G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "Qazoar Antique",
+                    numero: 172,
+                    numero2: "86D",
+                    etat: ["Sobre"],
+                    lieu: ["Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Rondouille Gibeuse",
+                    numero: 173,
+                    numero2: "87G",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé", "Tempêtueux"]
+                },
+                {
+                    nom: "Saumon D Andreas",
+                    numero: 174,
+                    numero2: "87D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Rivières"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Tribion Carrele",
+                    numero: 175,
+                    numero2: "88G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Sud", "Canaux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux", "Brumeux"]
+                },
+                {
+                    nom: "Urgule",
+                    numero: 176,
+                    numero2: "88D",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vannole Cameleon",
+                    numero: 177,
+                    numero2: "89G",
+                    etat: ["Défoncé"],
+                    lieu: ["Petits Lacs", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Neigeux", "Tempêtueux"]
+                },
+                {
+                    nom: "William",
+                    numero: 178,
+                    numero2: "89D",
+                    etat: ["Défoncé"],
+                    lieu: ["Grand Lac"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Xazatas",
+                    numero: 179,
+                    numero2: "90G",
+                    etat: ["Défoncé"],
+                    lieu: ["Mer Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Silverfish",
+                    numero: 180,
+                    numero2: "90D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "L Aubergine Marine",
+                    numero: 181,
+                    numero2: "91G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Le Poisson Prismatique",
+                    numero: 182,
+                    numero2: "91D",
+                    etat: ["Bourré"],
+                    lieu: ["Mer Sud"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé", "Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Le Nageoires D Azur",
+                    numero: 183,
+                    numero2: "92G",
+                    etat: ["Sobre"],
+                    lieu: ["Grand Lac", "Rivières"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "La Petite Gemme Marine",
+                    numero: 184,
+                    numero2: "92D",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Mer Nord", "Mer Sud"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Brumeux", "Pluvieux", "Nuageux", "Tempêtueux"]
+                },
+                {
+                    nom: "Hotfeather",
+                    numero: 185,
+                    numero2: "93G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer Nord", "Mer Sud"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Grab",
+                    numero: 186,
+                    numero2: "93D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Brumeux"]
+                },
+                {
+                    nom: "Tardaud",
+                    numero: 187,
+                    numero2: "94G",
+                    etat: ["Défoncé"],
+                    lieu: ["Bords de mer", "Canaux"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Nuageux"]
+                },
+                {
+                    nom: "Anemone Printaniere",
+                    numero: 188,
+                    numero2: "94D",
+                    etat: ["Sobre"],
+                    lieu: ["Bords de mer", "Mer Nord"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Amalgatine",
+                    numero: 189,
+                    numero2: "95G",
+                    etat: ["Bourré"],
+                    lieu: ["Grand Lac", "Petits Lacs"],
+                    moment: ["Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Ourou Beerus",
+                    numero: 190,
+                    numero2: "95D",
+                    etat: ["Bourré"],
+                    lieu: ["Bords de mer", "Grand Lac"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Pluvieux", "Tempêtueux"]
+                }
+                // Ajoute tes autres poissons ici
+            ],
+            summer: [
+
+                // Ajoute tes autres poissons ici
+            ],
+            halloween: [
+                {
+                    nom: "Horrostine",
+                    numero: 1,
+                    numero2: "1G",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Cycrabe",
+                    numero: 2,
+                    numero2: "1D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Neostraceae horribilis",
+                    numero: 3,
+                    numero2: "2G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Lac de l'Effroi"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Pagure Rouge",
+                    numero: 4,
+                    numero2: "2D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Zilure Démoniaque",
+                    numero: 5,
+                    numero2: "3G",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Squalus Infernalis",
+                    numero: 6,
+                    numero2: "3D",
+                    etat: ["Bourré"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Fantocéan",
+                    numero: 7,
+                    numero2: "4G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Langue de Satan",
+                    numero: 8,
+                    numero2: "4D",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Toxzoguille",
+                    numero: 9,
+                    numero2: "5G",
+                    etat: ["Défoncé"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Melusgnark",
+                    numero: 10,
+                    numero2: "5D",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Ombres", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Krakenos",
+                    numero: 11,
+                    numero2: "6G",
+                    etat: ["Défoncé"],
+                    lieu: ["Fleuves Ténébreux", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Chirobyssus",
+                    numero: 12,
+                    numero2: "6D",
+                    etat: ["Bourré"],
+                    lieu: ["Abysses du Nord", "Lac de l'Effroi"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nécrocrampe",
+                    numero: 13,
+                    numero2: "7G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Piranhéon",
+                    numero: 14,
+                    numero2: "7D",
+                    etat: ["Défoncé"],
+                    lieu: ["Lac de l'Effroi", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crustadémon",
+                    numero: 15,
+                    numero2: "8G",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Octohydra Nocturne",
+                    numero: 16,
+                    numero2: "8D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Abyssodémon",
+                    numero: 17,
+                    numero2: "9G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crustamortis",
+                    numero: 18,
+                    numero2: "9D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi", "Etangs Sombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Oculymphe",
+                    numero: 19,
+                    numero2: "10G",
+                    etat: ["Défoncé"],
+                    lieu: ["Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nécromurène",
+                    numero: 20,
+                    numero2: "10D",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Marécaille",
+                    numero: 21,
+                    numero2: "11G",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nécrotriton",
+                    numero: 22,
+                    numero2: "11D",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Ombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Zombicetus",
+                    numero: 23,
+                    numero2: "12G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Krueger des Abysses",
+                    numero: 24,
+                    numero2: "12D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Larve de Xénocrevisse",
+                    numero: 25,
+                    numero2: "13G",
+                    etat: ["Bourré"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Xénocrevisse",
+                    numero: 26,
+                    numero2: "13D",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Corail Nécroscière",
+                    numero: 27,
+                    numero2: "14G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Mycrable",
+                    numero: 28,
+                    numero2: "14D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Poisson Clown Clown",
+                    numero: 29,
+                    numero2: "15G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Bleurk",
+                    numero: 30,
+                    numero2: "15D",
+                    etat: ["Sobre"],
+                    lieu: ["Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nagabyssale",
+                    numero: 31,
+                    numero2: "16G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Candy Jelly-Fish",
+                    numero: 32,
+                    numero2: "16D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Zoctulus",
+                    numero: 33,
+                    numero2: "17G",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Ombres", "Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Barracroutta",
+                    numero: 34,
+                    numero2: "17D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Ba-te-raie",
+                    numero: 35,
+                    numero2: "18G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nagazkill",
+                    numero: 36,
+                    numero2: "18D",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Poisson citrouille",
+                    numero: 37,
+                    numero2: "19G",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Cranaraigné",
+                    numero: 38,
+                    numero2: "19D",
+                    etat: ["Défoncé"],
+                    lieu: ["Lac de l'Effroi", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crapamanite",
+                    numero: 39,
+                    numero2: "20G",
+                    etat: ["Bourré"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crapaud d'or",
+                    numero: 40,
+                    numero2: "20D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi", "Etangs Sombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Anibaltortle",
+                    numero: 41,
+                    numero2: "21G",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Ombres", "Etangs Sombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Maglimace",
+                    numero: 42,
+                    numero2: "21D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac de l'Effroi", "Etangs Sombres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Zombaleine",
+                    numero: 43,
+                    numero2: "22G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Mawgma",
+                    numero: 44,
+                    numero2: "22D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Cravone",
+                    numero: 45,
+                    numero2: "23G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Fusiotonik",
+                    numero: 46,
+                    numero2: "23D",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Zombéscargot",
+                    numero: 47,
+                    numero2: "24G",
+                    etat: ["Défoncé"],
+                    lieu: ["Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Sisilione",
+                    numero: 48,
+                    numero2: "24D",
+                    etat: ["Bourré"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vampirescargot",
+                    numero: 49,
+                    numero2: "25G",
+                    etat: ["Défoncé"],
+                    lieu: ["Etangs Sombres", "Fleuves Ténébreux"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Machoire d'Hades",
+                    numero: 50,
+                    numero2: "25D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Millipop",
+                    numero: 51,
+                    numero2: "26G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Necrojiko",
+                    numero: 52,
+                    numero2: "26D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Abysses du Nord"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Redhug",
+                    numero: 53,
+                    numero2: "27G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Damned Stinger",
+                    numero: 54,
+                    numero2: "27D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses du Nord", "Mer de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Swimming Dead",
+                    numero: 55,
+                    numero2: "28G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Kokichonk",
+                    numero: 56,
+                    numero2: "28D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Ombres", "Canaux du Cauchemar"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                }
+                // Ajoute tes autres poissons ici
+            ],
+            bloodlust: [
+                {
+                    nom: "Lamia Abyssal",
+                    numero: 1,
+                    numero2: "1G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vampiranha",
+                    numero: 2,
+                    numero2: "1D",
+                    etat: ["Sobre"],
+                    lieu: ["Fleuves Pourpres", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Salmon Salvator",
+                    numero: 3,
+                    numero2: "2G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Scyphozoa Draculea",
+                    numero: 4,
+                    numero2: "2D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Sanguiscale",
+                    numero: 5,
+                    numero2: "3G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses Obscurs", "Fleuves Pourpres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Noctakan",
+                    numero: 6,
+                    numero2: "3D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Dracupointius",
+                    numero: 7,
+                    numero2: "4G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses Obscurs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Lilith des Abysses",
+                    numero: 8,
+                    numero2: "4D",
+                    etat: ["Bourré"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nosferictis",
+                    numero: 9,
+                    numero2: "5G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Tarentatu",
+                    numero: 10,
+                    numero2: "5D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Suskipeu",
+                    numero: 11,
+                    numero2: "6G",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts", "Fleuves Pourpres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Goule Nosfératique",
+                    numero: 12,
+                    numero2: "6D",
+                    etat: ["Bourré"],
+                    lieu: ["Mer des Lamentations", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Abyssolac",
+                    numero: 13,
+                    numero2: "7G",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Fatalysiris",
+                    numero: 14,
+                    numero2: "7D",
+                    etat: ["Sobre"],
+                    lieu: ["Mer des Lamentations", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Draculac",
+                    numero: 15,
+                    numero2: "8G",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Méduse Spectrale",
+                    numero: 16,
+                    numero2: "8D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Spectre de la Nuit",
+                    numero: 17,
+                    numero2: "9G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vampiracine",
+                    numero: 18,
+                    numero2: "9D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Sanguivore des Abysses",
+                    numero: 19,
+                    numero2: "10G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Ancien des Abysses",
+                    numero: 20,
+                    numero2: "10D",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Banfish",
+                    numero: 21,
+                    numero2: "11G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer des Lamentations", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Axodrac",
+                    numero: 22,
+                    numero2: "11D",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Morts", "Fleuves Pourpres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Seichépire",
+                    numero: 23,
+                    numero2: "12G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Goulejon",
+                    numero: 24,
+                    numero2: "12D",
+                    etat: ["Sobre"],
+                    lieu: ["Etangs Morts", "Fleuves Pourpres", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Selviana",
+                    numero: 25,
+                    numero2: "13G",
+                    etat: ["Bourré"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Hippocalypse",
+                    numero: 26,
+                    numero2: "13D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Linceus Mysticus",
+                    numero: 27,
+                    numero2: "14G",
+                    etat: ["Défoncé"],
+                    lieu: ["Abysses Obscurs"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crapaula",
+                    numero: 28,
+                    numero2: "14D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts", "Fleuves Pourpres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Bernard Sanguinaire",
+                    numero: 29,
+                    numero2: "15G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Obscuralma",
+                    numero: 30,
+                    numero2: "15D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Draculea",
+                    numero: 31,
+                    numero2: "16G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Hipporoquet",
+                    numero: 32,
+                    numero2: "16D",
+                    etat: ["Sobre"],
+                    lieu: ["Fleuves Pourpres", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Hémolux",
+                    numero: 33,
+                    numero2: "17G",
+                    etat: ["Bourré"],
+                    lieu: ["Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Hippoglycémy",
+                    numero: 34,
+                    numero2: "17D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nosferay",
+                    numero: 35,
+                    numero2: "18G",
+                    etat: ["Bourré"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Spectre Sanguin",
+                    numero: 36,
+                    numero2: "18D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "L'immortel",
+                    numero: 37,
+                    numero2: "19G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Spectrophage",
+                    numero: 38,
+                    numero2: "19D",
+                    etat: ["Sobre"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Ghosty",
+                    numero: 39,
+                    numero2: "20G",
+                    etat: ["Bourré"],
+                    lieu: ["Fleuves Pourpres", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Goule de Lince",
+                    numero: 40,
+                    numero2: "20D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Léanodon",
+                    numero: 41,
+                    numero2: "21G",
+                    etat: ["Bourré"],
+                    lieu: ["Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vampiron des Abysses",
+                    numero: 42,
+                    numero2: "21D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Spectrangle",
+                    numero: 43,
+                    numero2: "22G",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Glouglouglou",
+                    numero: 44,
+                    numero2: "22D",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Grognonfou",
+                    numero: 45,
+                    numero2: "23G",
+                    etat: ["Sobre"],
+                    lieu: ["Fleuves Pourpres", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Abyssodon",
+                    numero: 46,
+                    numero2: "23D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Thalassogardien",
+                    numero: 47,
+                    numero2: "24G",
+                    etat: ["Sobre"],
+                    lieu: ["Mer des Lamentations", "Canaux de la Nuit"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crocobscur",
+                    numero: 48,
+                    numero2: "24D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Lac Sombre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Odeleko Dortoka",
+                    numero: 49,
+                    numero2: "25G",
+                    etat: ["Bourré"],
+                    lieu: ["Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Dracus Andreacus",
+                    numero: 50,
+                    numero2: "25D",
+                    etat: ["Sobre"],
+                    lieu: ["Côte des Mânes", "Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Bullanis Draculea",
+                    numero: 51,
+                    numero2: "26G",
+                    etat: ["Sobre"],
+                    lieu: ["Abysses Obscurs", "Mer des Lamentations"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Cranium Fugu",
+                    numero: 52,
+                    numero2: "26D",
+                    etat: ["Défoncé"],
+                    lieu: ["Côte des Mânes", "Fleuves Pourpres"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Basileus Petrificat",
+                    numero: 53,
+                    numero2: "27G",
+                    etat: ["Défoncé"],
+                    lieu: ["Lac Sombre", "Etangs Morts"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                }
+                // Ajoute tes autres poissons ici
+            ],
+            horizon: [
+                {
+                    nom: "Glaciot",
+                    numero: 1,
+                    numero2: "1G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Glagla",
+                    numero: 2,
+                    numero2: "1D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Poulpolar",
+                    numero: 3,
+                    numero2: "2G",
+                    etat: ["Défoncé"],
+                    lieu: ["Crique de glace", "Fleuves Cristallisés"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Glacianguille",
+                    numero: 4,
+                    numero2: "2D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Givrétoile",
+                    numero: 5,
+                    numero2: "3G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Krillige",
+                    numero: 6,
+                    numero2: "3D",
+                    etat: ["Bourré"],
+                    lieu: ["Désert de givre", "Quartiers Figés"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Floconquille",
+                    numero: 7,
+                    numero2: "4G",
+                    etat: ["Sobre"],
+                    lieu: ["Etendues givrées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Cryostèle",
+                    numero: 8,
+                    numero2: "4D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Pierre noir",
+                    numero: 9,
+                    numero2: "5G",
+                    etat: ["Défoncé"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Lundralith",
+                    numero: 10,
+                    numero2: "5D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Polipluche",
+                    numero: 11,
+                    numero2: "6G",
+                    etat: ["Défoncé"],
+                    lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
+                    moment: ["Aube"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Cryonéon",
+                    numero: 12,
+                    numero2: "6D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Flocibulle",
+                    numero: 13,
+                    numero2: "7G",
+                    etat: ["Bourré"],
+                    lieu: ["Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Frigorath",
+                    numero: 14,
+                    numero2: "7D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Pluvieux", "Neigeux"]
+                },
+                {
+                    nom: "Frystal",
+                    numero: 15,
+                    numero2: "8G",
+                    etat: ["Défoncé"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Journée"],
+                    meteo: ["Brumeux", "Pluvieux"]
+                },
+                {
+                    nom: "Frisalis",
+                    numero: 16,
+                    numero2: "8D",
+                    etat: ["Bourré"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Frostusque",
+                    numero: 17,
+                    numero2: "9G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Glacélion",
+                    numero: 18,
+                    numero2: "9D",
+                    etat: ["Sobre"],
+                    lieu: ["Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Glacérin",
+                    numero: 19,
+                    numero2: "10G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Désert de givre"],
+                    moment: ["Aube", "Crépuscule", "Nuit"],
+                    meteo: ["Nuageux", "Brumeux"]
+                },
+                {
+                    nom: "Neosquilla",
+                    numero: 20,
+                    numero2: "10D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Etendues givrées"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tempêtueux", "Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Polyglacis",
+                    numero: 21,
+                    numero2: "11G",
+                    etat: ["Défoncé"],
+                    lieu: ["Côtes gelées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Turtarctis",
+                    numero: 22,
+                    numero2: "11D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Crique de glace"],
+                    moment: ["Aube", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Blobivern",
+                    numero: 23,
+                    numero2: "12G",
+                    etat: ["Bourré"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Glaglaféfroid",
+                    numero: 24,
+                    numero2: "12D",
+                    etat: ["Sobre"],
+                    lieu: ["Désert de givre", "Fleuves Cristallisés"],
+                    moment: ["Journée", "Crépuscule"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Turboscargot",
+                    numero: 25,
+                    numero2: "13G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Frosted Eyebrow",
+                    numero: 26,
+                    numero2: "13D",
+                    etat: ["Sobre"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Cryoplancton",
+                    numero: 27,
+                    numero2: "14G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Laboreale",
+                    numero: 28,
+                    numero2: "14D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tempêtueux"]
+                },
+                {
+                    nom: "Mélusine",
+                    numero: 29,
+                    numero2: "15G",
+                    etat: ["Bourré"],
+                    lieu: ["Crique de glace"],
+                    moment: ["Aube"],
+                    meteo: ["Pluvieux"]
+                },
+                {
+                    nom: "Crabicy",
+                    numero: 30,
+                    numero2: "15D",
+                    etat: ["Sobre"],
+                    lieu: ["Crique de glace"],
+                    moment: ["Journée"],
+                    meteo: ["Nuageux"]
+                },
+                {
+                    nom: "Cryono",
+                    numero: 31,
+                    numero2: "16G",
+                    etat: ["Défoncé"],
+                    lieu: ["Baie des Brumes Gelées"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Pluvieux"]
+                },
+                {
+                    nom: "Temptotis",
+                    numero: 32,
+                    numero2: "16D",
+                    etat: ["Bourré"],
+                    lieu: ["Désert de givre"],
+                    moment: ["Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Crocgivre",
+                    numero: 33,
+                    numero2: "17G",
+                    etat: ["Défoncé"],
+                    lieu: ["Crique de glace"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Ecrin de gel",
+                    numero: 34,
+                    numero2: "17D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tempêtueux", "Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Luminara",
+                    numero: 35,
+                    numero2: "18G",
+                    etat: ["Défoncé"],
+                    lieu: ["Etendues givrées", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Pluvieux", "Neigeux"]
+                },
+                {
+                    nom: "Blizzarck",
+                    numero: 36,
+                    numero2: "18D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé"]
+                },
+                {
+                    nom: "Astralux",
+                    numero: 37,
+                    numero2: "19G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Givrela",
+                    numero: 38,
+                    numero2: "19D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Fleuves Cristallisés"],
+                    moment: ["Journée", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Poisson Glacique",
+                    numero: 39,
+                    numero2: "20G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Désert de givre"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Lucyole",
+                    numero: 40,
+                    numero2: "20D",
+                    etat: ["Bourré"],
+                    lieu: ["Quartiers Figés"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Fulgora",
+                    numero: 41,
+                    numero2: "21G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Baie des Brumes Gelées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Pluvieux"]
+                },
+                {
+                    nom: "Aile de Givre",
+                    numero: 42,
+                    numero2: "21D",
+                    etat: ["Défoncé"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Croc de givre",
+                    numero: 43,
+                    numero2: "22G",
+                    etat: ["Sobre"],
+                    lieu: ["Désert de givre", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Louphoque de glace",
+                    numero: 44,
+                    numero2: "22D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Aqualios",
+                    numero: 45,
+                    numero2: "23G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Désert de givre"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Griffe des glaces",
+                    numero: 46,
+                    numero2: "23D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Désert de givre"],
+                    moment: ["Aube", "Crépuscule"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Cryomedusa",
+                    numero: 47,
+                    numero2: "24G",
+                    etat: ["Sobre"],
+                    lieu: ["Quartiers Figés", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Cryospina",
+                    numero: 48,
+                    numero2: "24D",
+                    etat: ["Défoncé"],
+                    lieu: ["Côtes gelées", "Etendues givrées"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Nuageux", "Brumeux"]
+                },
+                {
+                    nom: "Petit iceberg",
+                    numero: 49,
+                    numero2: "25G",
+                    etat: ["Défoncé"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Etoile polaire",
+                    numero: 50,
+                    numero2: "25D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Baie des Brumes Gelées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Artocrabe",
+                    numero: 51,
+                    numero2: "26G",
+                    etat: ["Sobre"],
+                    lieu: ["Quartiers Figés", "Etendues givrées"],
+                    moment: ["Journée"],
+                    meteo: ["Tempêtueux", "Nuageux", "Neigeux"]
+                },
+                {
+                    nom: "Nymphe Cristaline",
+                    numero: 52,
+                    numero2: "26D",
+                    etat: ["Bourré"],
+                    lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tempêtueux", "Brumeux", "Neigeux"]
+                },
+                {
+                    nom: "Glacivena Serpens",
+                    numero: 53,
+                    numero2: "27G",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Crylobite",
+                    numero: 54,
+                    numero2: "27D",
+                    etat: ["Défoncé"],
+                    lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Nuageux"]
+                },
+                {
+                    nom: "Polaris Borealis",
+                    numero: 55,
+                    numero2: "28G",
+                    etat: ["Bourré"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Brumeux"]
+                },
+                {
+                    nom: "Abyssios",
+                    numero: 56,
+                    numero2: "28D",
+                    etat: ["Sobre"],
+                    lieu: ["Etendues givrées", "Fleuves Cristallisés"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Abyssis",
+                    numero: 57,
+                    numero2: "29G",
+                    etat: ["Sobre"],
+                    lieu: ["Etendues givrées", "Fleuves Cristallisés"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux"]
+                },
+                {
+                    nom: "Iceoloth",
+                    numero: 58,
+                    numero2: "29D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Etendues givrées"],
+                    moment: ["Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Glacius Rex",
+                    numero: 59,
+                    numero2: "30G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Araignée de mer",
+                    numero: 60,
+                    numero2: "30D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Crique de glace"],
+                    moment: ["Aube", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Permafrost",
+                    numero: 61,
+                    numero2: "31G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Caerulius",
+                    numero: 62,
+                    numero2: "31D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Piraglagla",
+                    numero: 63,
+                    numero2: "32G",
+                    etat: ["Sobre"],
+                    lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Solarius",
+                    numero: 64,
+                    numero2: "32D",
+                    etat: ["Bourré"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Dégagé"]
+                },
+                {
+                    nom: "Aurorine",
+                    numero: 65,
+                    numero2: "33G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Frigoris",
+                    numero: 66,
+                    numero2: "33D",
+                    etat: ["Bourré"],
+                    lieu: ["Côtes gelées", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Torticube",
+                    numero: 67,
+                    numero2: "34G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Frygobyte",
+                    numero: 68,
+                    numero2: "34D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Abysalite",
+                    numero: 69,
+                    numero2: "35G",
+                    etat: ["Sobre"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Poulpice",
+                    numero: 70,
+                    numero2: "35D",
+                    etat: ["Bourré"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Nuagette",
+                    numero: 71,
+                    numero2: "36G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Désert de givre"],
+                    moment: ["Aube", "Journée"],
+                    meteo: ["Tempêtueux", "Dégagé", "Neigeux"]
+                },
+                {
+                    nom: "Pirapaténis",
+                    numero: 72,
+                    numero2: "36D",
+                    etat: ["Sobre"],
+                    lieu: ["Etendues givrées", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Crysalon",
+                    numero: 73,
+                    numero2: "37G",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Dégagé"]
+                },
+                {
+                    nom: "Glacérai argenté",
+                    numero: 74,
+                    numero2: "37D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Axofrost",
+                    numero: 75,
+                    numero2: "38G",
+                    etat: ["Bourré"],
+                    lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Nuageux", "Brumeux"]
+                },
+                {
+                    nom: "Ice Athan",
+                    numero: 76,
+                    numero2: "38D",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Fleuves Cristallisés"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Dégagé", "Brumeux"]
+                },
+                {
+                    nom: "Orelys",
+                    numero: 77,
+                    numero2: "39G",
+                    etat: ["Sobre"],
+                    lieu: ["Baie des Brumes Gelées", "Crique de glace"],
+                    moment: ["Crépuscule", "Nuit"],
+                    meteo: ["Tempêtueux", "Neigeux"]
+                },
+                {
+                    nom: "Givreluisant",
+                    numero: 78,
+                    numero2: "39D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Vagabond Abyssal",
+                    numero: 79,
+                    numero2: "40G",
+                    etat: ["Sobre"],
+                    lieu: ["Désert de givre", "Etendues givrées"],
+                    moment: ["Crépuscule"],
+                    meteo: ["Tout temps"]
+                },
+                {
+                    nom: "Cryosquelette",
+                    numero: 80,
+                    numero2: "40D",
+                    etat: ["Sobre"],
+                    lieu: ["Côtes gelées", "Etendues givrées"],
+                    moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
+                    meteo: ["Tout temps"]
+                }
+                // Ajoute tes autres poissons ici
+            ]
+        };
+
+        // Fonction pour créer des badges de conditions
+        function createConditionBadges(conditions) {
+            if (!conditions || conditions.length === 0) return 'N/A';
+            return conditions.map(cond => {
+                // Normaliser le texte pour la classe CSS (enlever accents, espaces, etc.)
+                const className = cond
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
+                    .replace(/\s+/g, '-') // Remplacer espaces par tirets
+                    .replace(/['']/g, '') // Enlever apostrophes
+                    .replace(/é/g, 'e'); // Remplacer é par e
+                
+                return `<span class="condition-badge ${className}">${cond}</span>`;
+            }).join('');
+        }
+
+        // Charger les poissons capturés depuis localStorage
+        function loadCaughtFish() {
+            return JSON.parse(localStorage.getItem('caughtFish') || '{}');
+        }
+
+        // Sauvegarder les poissons capturés
+        function saveCaughtFish(caughtFish) {
+            localStorage.setItem('caughtFish', JSON.stringify(caughtFish));
+        }
+
+        // Basculer l'état de capture
+        function toggleCaught(category, index) {
+            const caughtFish = loadCaughtFish();
+            const key = `${category}-${index}`;
+            
+            if (caughtFish[key]) {
+                delete caughtFish[key];
+            } else {
+                caughtFish[key] = true;
+            }
+            
+            saveCaughtFish(caughtFish);
+            updateStats(category);
+            
+            // Mettre à jour visuellement la ligne
+            const row = document.querySelector(`#tbody-${category} tr[data-index="${index}"]`);
+            if (caughtFish[key]) {
+                row.classList.add('caught');
+            } else {
+                row.classList.remove('caught');
+            }
+        }
+
+        // Générer le tableau pour une catégorie
+        function generateTable(category) {
+            const tbody = document.getElementById(`tbody-${category}`);
+            const fish = fishData[category];
+            const caughtFish = loadCaughtFish();
+            
+            tbody.innerHTML = '';
+            
+            fish.forEach((f, index) => {
+                const key = `${category}-${index}`;
+                const isCaught = caughtFish[key] || false;
+                
+                const row = document.createElement('tr');
+                row.setAttribute('data-index', index);
+                if (isCaught) row.classList.add('caught');
+                
+                row.innerHTML = `
+                    <td>${f.nom}</td>
+                    <td>${f.numero}</td>
+                    <td>${f.numero2}</td>
+                    <td class="checkbox-container">
+                        <input type="checkbox" ${isCaught ? 'checked' : ''} 
+                               onchange="toggleCaught('${category}', ${index})">
+                    </td>
+                    <td><div class="conditions">${createConditionBadges(f.etat)}</div></td>
+                    <td><div class="conditions">${createConditionBadges(f.lieu)}</div></td>
+                    <td><div class="conditions">${createConditionBadges(f.moment)}</div></td>
+                    <td><div class="conditions">${createConditionBadges(f.meteo)}</div></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            updateStats(category);
+            populateFilters(category);
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats(category) {
+            const fish = fishData[category];
+            const caughtFish = loadCaughtFish();
+            
+            const total = fish.length;
+            let caught = 0;
+            
+            fish.forEach((f, index) => {
+                const key = `${category}-${index}`;
+                if (caughtFish[key]) caught++;
+            });
+            
+            const percent = total > 0 ? Math.round((caught / total) * 100) : 0;
+            
+            document.getElementById(`stats-${category}-caught`).textContent = caught;
+            document.getElementById(`stats-${category}-total`).textContent = total;
+            document.getElementById(`stats-${category}-percent`).textContent = percent + '%';
+        }
+
+        // Peupler les filtres
+        function populateFilters(category) {
+            const fish = fishData[category];
+            
+            const etats = new Set();
+            const lieux = new Set();
+            const moments = new Set();
+            const meteos = new Set();
+            
+            fish.forEach(f => {
+                f.etat.forEach(e => etats.add(e));
+                f.lieu.forEach(l => lieux.add(l));
+                f.moment.forEach(m => moments.add(m));
+                f.meteo.forEach(m => meteos.add(m));
+            });
+            
+            populateSelect(`filter-${category}-etat`, etats);
+            populateSelect(`filter-${category}-lieu`, lieux);
+            populateSelect(`filter-${category}-moment`, moments);
+            populateSelect(`filter-${category}-meteo`, meteos);
+        }
+
+        function populateSelect(id, values) {
+            const select = document.getElementById(id);
+            const currentValue = select.value;
+            
+            // Garder l'option "Tous"
+            select.innerHTML = '<option value="">Tous</option>';
+            
+            Array.from(values).sort().forEach(value => {
+                if (value !== 'N/A') {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    select.appendChild(option);
+                }
+            });
+            
+            select.value = currentValue;
+        }
+
+        // Appliquer les filtres
+        function applyFilters(category) {
+            const etat = document.getElementById(`filter-${category}-etat`).value;
+            const lieu = document.getElementById(`filter-${category}-lieu`).value;
+            const moment = document.getElementById(`filter-${category}-moment`).value;
+            const meteo = document.getElementById(`filter-${category}-meteo`).value;
+            
+            const fish = fishData[category];
+            const rows = document.querySelectorAll(`#tbody-${category} tr`);
+            
+            rows.forEach((row, index) => {
+                const f = fish[index];
+                
+                const matchEtat = !etat || f.etat.includes(etat);
+                const matchLieu = !lieu || f.lieu.includes(lieu);
+                const matchMoment = !moment || f.moment.includes(moment);
+                const matchMeteo = !meteo || f.meteo.includes(meteo);
+                
+                if (matchEtat && matchLieu && matchMoment && matchMeteo) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        // Réinitialiser les filtres
+        function resetFilters(category) {
+            document.getElementById(`filter-${category}-etat`).value = '';
+            document.getElementById(`filter-${category}-lieu`).value = '';
+            document.getElementById(`filter-${category}-moment`).value = '';
+            document.getElementById(`filter-${category}-meteo`).value = '';
+            
+            const rows = document.querySelectorAll(`#tbody-${category} tr`);
+            rows.forEach(row => row.classList.remove('hidden'));
+        }
+
+        // Changer d'onglet
+        function switchTab(category) {
+            // Désactiver tous les onglets
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            document.querySelector(`.tab-button.${category}`).classList.add('active');
+            document.getElementById(category).classList.add('active');
+        }
+
+        // Trier le tableau
+        let sortOrder = {};
+        function sortTable(category, columnIndex) {
+            const tbody = document.getElementById(`tbody-${category}`);
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            const key = `${category}-${columnIndex}`;
+            sortOrder[key] = !sortOrder[key];
+            
+            rows.sort((a, b) => {
+                let aVal = a.cells[columnIndex].textContent.trim();
+                let bVal = b.cells[columnIndex].textContent.trim();
+                
+                // Conversion en nombre si c'est un numéro
+                if (columnIndex === 1) {
+                    aVal = parseInt(aVal);
+                    bVal = parseInt(bVal);
+                }
+                
+                if (aVal < bVal) return sortOrder[key] ? -1 : 1;
+                if (aVal > bVal) return sortOrder[key] ? 1 : -1;
+                return 0;
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            generateTable('standard');
+            generateTable('summer');
+            generateTable('halloween');
+            generateTable('bloodlust');
+            generateTable('horizon');
+        });
+    </script>
+</body>
+</html>
