@@ -28,12 +28,110 @@
         }
 
         h1 { /* Titre de la page */
+            position: relative;
             text-align: center;
             padding: 30px;
             background: linear-gradient(135deg, #2d5f4d, #1a3a2e);
             color: #ffffff;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Bouton Info */
+        .info-button {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Popup */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #e52a2a;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            background: #c41e1e;
+            transform: rotate(90deg);
+        }
+
+        .popup-content h2 {
+            color: #2d5f4d;
+            margin-bottom: 20px;
+        }
+
+        .popup-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .popup-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .popup-content li {
+            margin-bottom: 8px;
+            line-height: 1.6;
         }
 
         /* Onglets */
@@ -233,6 +331,21 @@
 
         th.sortable:hover {
             background: #1a3a2e;
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+        }
+
+        th.sortable.sorted-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+
+        th.sortable.sorted-desc::after {
+            content: ' ▼';
+            opacity: 1;
         }
 
         td {
@@ -439,12 +552,94 @@
                 font-size: 0.9em;
             }
         }
+
+        /* Tableau statistiques par zone */
+        .zone-stats-container {
+            background: #dddddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #2d5f4d;
+        }
+
+        .zone-stats-container h3 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+
+        .zone-stats-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .zone-stats-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .zone-stats-table thead {
+            background: #2d5f4d;
+            color: white;
+        }
+
+        .zone-stats-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #1a3a2e;
+        }
+
+        .zone-stats-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .zone-stats-table tr:hover {
+            background: #f1f8e9;
+        }
+
+        .zone-stats-table .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .zone-stats-table .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #66bb6a, #43a047);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .zone-stats-table .zone-name {
+            font-weight: bold;
+            color: #2d5f4d;
+        }
+
+        .zone-stats-table .count {
+            text-align: center;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🐟 Suivi des poissons 🐟</h1>
-
+        <h1>
+            🐟 Suivi des poissons 🐟
+            <button class="info-button" onclick="openPopup()">ℹ️</button>
+        </h1>
         <!-- Onglets -->
         <div class="tabs">
             <button class="tab-button standard active" onclick="switchTab('standard')">Standard</button>
@@ -472,37 +667,55 @@
                 </div>
             </div>
 
+            <!-- Statistiques par zone -->
+            <div class="zone-stats-container">
+                <h3>📍 Progression par zone</h3>
+                <div class="zone-stats-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zone</th>
+                                <th class="count">Capturés</th>
+                                <th class="count">Total</th>
+                                <th style="width: 40%;">Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zone-stats-standard">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Filtres -->
             <div class="filters">
                 <h3>🔍 Filtres</h3>
                 <div class="filter-group">
                     <div>
                         <label>État</label>
-                        <select id="filter-standard-etat">
+                        <select id="filter-standard-etat" onchange="applyFilters('standard')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Lieu</label>
-                        <select id="filter-standard-lieu">
+                        <select id="filter-standard-lieu" onchange="applyFilters('standard')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Moment</label>
-                        <select id="filter-standard-moment">
+                        <select id="filter-standard-moment" onchange="applyFilters('standard')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Météo</label>
-                        <select id="filter-standard-meteo">
+                        <select id="filter-standard-meteo" onchange="applyFilters('standard')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn-filter" onclick="applyFilters('standard')">Appliquer les filtres</button>
                     <button class="btn-reset" onclick="resetFilters('standard')">Réinitialiser</button>
                 </div>
             </div>
@@ -545,36 +758,54 @@
                 </div>
             </div>
 
+            <!-- Statistiques par zone -->
+            <div class="zone-stats-container">
+                <h3>📍 Progression par zone</h3>
+                <div class="zone-stats-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zone</th>
+                                <th class="count">Capturés</th>
+                                <th class="count">Total</th>
+                                <th style="width: 40%;">Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zone-stats-summer">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="filters">
                 <h3>🔍 Filtres</h3>
                 <div class="filter-group">
                     <div>
                         <label>État</label>
-                        <select id="filter-summer-etat">
+                        <select id="filter-summer-etat" onchange="applyFilters('summer')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Lieu</label>
-                        <select id="filter-summer-lieu">
+                        <select id="filter-summer-lieu" onchange="applyFilters('summer')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Moment</label>
-                        <select id="filter-summer-moment">
+                        <select id="filter-summer-moment" onchange="applyFilters('summer')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Météo</label>
-                        <select id="filter-summer-meteo">
+                        <select id="filter-summer-meteo" onchange="applyFilters('summer')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn-filter" onclick="applyFilters('summer')">Appliquer les filtres</button>
                     <button class="btn-reset" onclick="resetFilters('summer')">Réinitialiser</button>
                 </div>
             </div>
@@ -586,11 +817,11 @@
                             <th class="sortable" onclick="sortTable('summer', 0)">Nom</th>
                             <th class="sortable" onclick="sortTable('summer', 1)">N°</th>
                             <th class="sortable" onclick="sortTable('summer', 2)">Page</th>
-                            <th>Capturé</th>
-                            <th>État</th>
-                            <th>Lieu</th>
-                            <th>Moment</th>
-                            <th>Météo</th>
+                            <th class="sortable" onclick="sortTable('summer', 3)">Capturé</th>
+                            <th class="sortable" onclick="sortTable('summer', 4)">États</th>
+                            <th class="sortable" onclick="sortTable('summer', 5)">Lieux</th>
+                            <th class="sortable" onclick="sortTable('summer', 6)">Moments</th>
+                            <th class="sortable" onclick="sortTable('summer', 7)">Météos</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-summer">
@@ -616,36 +847,54 @@
                 </div>
             </div>
 
+            <!-- Statistiques par zone -->
+            <div class="zone-stats-container">
+                <h3>📍 Progression par zone</h3>
+                <div class="zone-stats-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zone</th>
+                                <th class="count">Capturés</th>
+                                <th class="count">Total</th>
+                                <th style="width: 40%;">Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zone-stats-halloween">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="filters">
                 <h3>🔍 Filtres</h3>
                 <div class="filter-group">
                     <div>
                         <label>État</label>
-                        <select id="filter-halloween-etat">
+                        <select id="filter-halloween-etat" onchange="applyFilters('halloween')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Lieu</label>
-                        <select id="filter-halloween-lieu">
+                        <select id="filter-halloween-lieu" onchange="applyFilters('halloween')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Moment</label>
-                        <select id="filter-halloween-moment">
+                        <select id="filter-halloween-moment" onchange="applyFilters('halloween')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Météo</label>
-                        <select id="filter-halloween-meteo">
+                        <select id="filter-halloween-meteo" onchange="applyFilters('halloween')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn-filter" onclick="applyFilters('halloween')">Appliquer les filtres</button>
                     <button class="btn-reset" onclick="resetFilters('halloween')">Réinitialiser</button>
                 </div>
             </div>
@@ -657,11 +906,11 @@
                             <th class="sortable" onclick="sortTable('halloween', 0)">Nom</th>
                             <th class="sortable" onclick="sortTable('halloween', 1)">N°</th>
                             <th class="sortable" onclick="sortTable('halloween', 2)">Page</th>
-                            <th>Capturé</th>
-                            <th>État</th>
-                            <th>Lieu</th>
-                            <th>Moment</th>
-                            <th>Météo</th>
+                            <th class="sortable" onclick="sortTable('halloween', 3)">Capturé</th>
+                            <th class="sortable" onclick="sortTable('halloween', 4)">États</th>
+                            <th class="sortable" onclick="sortTable('halloween', 5)">Lieux</th>
+                            <th class="sortable" onclick="sortTable('halloween', 6)">Moments</th>
+                            <th class="sortable" onclick="sortTable('halloween', 7)">Météos</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-halloween">
@@ -687,36 +936,54 @@
                 </div>
             </div>
 
+            <!-- Statistiques par zone -->
+            <div class="zone-stats-container">
+                <h3>📍 Progression par zone</h3>
+                <div class="zone-stats-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zone</th>
+                                <th class="count">Capturés</th>
+                                <th class="count">Total</th>
+                                <th style="width: 40%;">Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zone-stats-bloodlust">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="filters">
                 <h3>🔍 Filtres</h3>
                 <div class="filter-group">
                     <div>
                         <label>État</label>
-                        <select id="filter-bloodlust-etat">
+                        <select id="filter-bloodlust-etat" onchange="applyFilters('bloodlust')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Lieu</label>
-                        <select id="filter-bloodlust-lieu">
+                        <select id="filter-bloodlust-lieu" onchange="applyFilters('bloodlust')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Moment</label>
-                        <select id="filter-bloodlust-moment">
+                        <select id="filter-bloodlust-moment" onchange="applyFilters('bloodlust')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Météo</label>
-                        <select id="filter-bloodlust-meteo">
+                        <select id="filter-bloodlust-meteo" onchange="applyFilters('bloodlust')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn-filter" onclick="applyFilters('bloodlust')">Appliquer les filtres</button>
                     <button class="btn-reset" onclick="resetFilters('bloodlust')">Réinitialiser</button>
                 </div>
             </div>
@@ -728,11 +995,11 @@
                             <th class="sortable" onclick="sortTable('bloodlust', 0)">Nom</th>
                             <th class="sortable" onclick="sortTable('bloodlust', 1)">N°</th>
                             <th class="sortable" onclick="sortTable('bloodlust', 2)">Page</th>
-                            <th>Capturé</th>
-                            <th>État</th>
-                            <th>Lieu</th>
-                            <th>Moment</th>
-                            <th>Météo</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 3)">Capturé</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 4)">États</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 5)">Lieux</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 6)">Moments</th>
+                            <th class="sortable" onclick="sortTable('bloodlust', 7)">Météos</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-bloodlust">
@@ -758,36 +1025,54 @@
                 </div>
             </div>
 
+            <!-- Statistiques par zone -->
+            <div class="zone-stats-container">
+                <h3>📍 Progression par zone</h3>
+                <div class="zone-stats-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zone</th>
+                                <th class="count">Capturés</th>
+                                <th class="count">Total</th>
+                                <th style="width: 40%;">Progression</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zone-stats-horizon">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="filters">
                 <h3>🔍 Filtres</h3>
                 <div class="filter-group">
                     <div>
                         <label>État</label>
-                        <select id="filter-horizon-etat">
+                        <select id="filter-horizon-etat" onchange="applyFilters('horizon')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Lieu</label>
-                        <select id="filter-horizon-lieu">
+                        <select id="filter-horizon-lieu" onchange="applyFilters('horizon')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Moment</label>
-                        <select id="filter-horizon-moment">
+                        <select id="filter-horizon-moment" onchange="applyFilters('horizon')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                     <div>
                         <label>Météo</label>
-                        <select id="filter-horizon-meteo">
+                        <select id="filter-horizon-meteo" onchange="applyFilters('horizon')">
                             <option value="">Tous</option>
                         </select>
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn-filter" onclick="applyFilters('horizon')">Appliquer les filtres</button>
                     <button class="btn-reset" onclick="resetFilters('horizon')">Réinitialiser</button>
                 </div>
             </div>
@@ -799,16 +1084,43 @@
                             <th class="sortable" onclick="sortTable('horizon', 0)">Nom</th>
                             <th class="sortable" onclick="sortTable('horizon', 1)">N°</th>
                             <th class="sortable" onclick="sortTable('horizon', 2)">Page</th>
-                            <th>Capturé</th>
-                            <th>État</th>
-                            <th>Lieu</th>
-                            <th>Moment</th>
-                            <th>Météo</th>
+                            <th class="sortable" onclick="sortTable('horizon', 3)">Capturé</th>
+                            <th class="sortable" onclick="sortTable('horizon', 4)">États</th>
+                            <th class="sortable" onclick="sortTable('horizon', 5)">Lieux</th>
+                            <th class="sortable" onclick="sortTable('horizon', 6)">Moments</th>
+                            <th class="sortable" onclick="sortTable('horizon', 7)">Météos</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-horizon">
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+        <!-- Popup Info -->
+        <div class="popup-overlay" id="infoPopup" onclick="closePopup(event)">
+            <div class="popup-content" onclick="event.stopPropagation()">
+                <button class="popup-close" onclick="closePopup()">✕</button>
+                <h2>ℹ️ Informations</h2>
+                <p><strong>Bienvenue sur le gestionnaire de pêche !</strong></p>
+                <p><strong>Fonctionnalités :</strong></p>
+                <ul>
+                    <li>✅ Cochez les poissons capturés</li>
+                    <li>🔍 Filtrez par état, lieu, moment et météo</li>
+                    <li>📊 Suivez votre progression en temps réel</li>
+                    <li>🗂️ Triez les colonnes en cliquant sur les en-têtes</li>
+                </ul>
+                <p><em>Vos données sont sauvegardées localement dans votre navigateur.</em></p>
+                <p><strong>Zones de pêche</strong></p>
+                <ul>
+                    <li>Mer Sud = Crique de glace</li>
+                    <li>Mer Nord = Baies des brûmes gelées</li>
+                    <li>Grand lac = Desert de givre</li>
+                    <li>Petit lac = Etendue givrée</li>
+                    <li>Bord de mer = Côtes gelées</li>
+                    <li>Rivière = Fleuve cristalisé</li>
+                    <li>Canaux = Quartiers figés</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -3537,7 +3849,7 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées", "Crique de glace"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Poulpolar",
@@ -3636,7 +3948,7 @@
                     etat: ["Bourré"],
                     lieu: ["Fleuves Cristallisés"],
                     moment: ["Aube", "Journée"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Frigorath",
@@ -3663,7 +3975,7 @@
                     etat: ["Bourré"],
                     lieu: ["Baie des Brumes Gelées", "Crique de glace"],
                     moment: ["Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Frostusque",
@@ -3726,7 +4038,7 @@
                     etat: ["Bourré"],
                     lieu: ["Désert de givre", "Etendues givrées"],
                     moment: ["Journée", "Crépuscule"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Glaglaféfroid",
@@ -3762,7 +4074,7 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées", "Crique de glace"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Laboreale",
@@ -3852,7 +4164,7 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées", "Quartiers Figés"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Givrela",
@@ -4059,7 +4371,7 @@
                     etat: ["Bourré"],
                     lieu: ["Côtes gelées", "Crique de glace"],
                     moment: ["Aube", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Permafrost",
@@ -4077,7 +4389,7 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées"],
                     moment: ["Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Piraglagla",
@@ -4086,7 +4398,7 @@
                     etat: ["Sobre"],
                     lieu: ["Fleuves Cristallisés", "Quartiers Figés"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Solarius",
@@ -4104,7 +4416,7 @@
                     etat: ["Sobre"],
                     lieu: ["Baie des Brumes Gelées", "Crique de glace"],
                     moment: ["Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Frigoris",
@@ -4113,7 +4425,7 @@
                     etat: ["Bourré"],
                     lieu: ["Côtes gelées", "Quartiers Figés"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Torticube",
@@ -4140,7 +4452,7 @@
                     etat: ["Sobre"],
                     lieu: ["Désert de givre", "Etendues givrées"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Poulpice",
@@ -4149,7 +4461,7 @@
                     etat: ["Bourré"],
                     lieu: ["Baie des Brumes Gelées", "Crique de glace"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Nuagette",
@@ -4167,7 +4479,7 @@
                     etat: ["Sobre"],
                     lieu: ["Etendues givrées", "Quartiers Figés"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Crysalon",
@@ -4185,7 +4497,7 @@
                     etat: ["Sobre"],
                     lieu: ["Baie des Brumes Gelées", "Crique de glace"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Axofrost",
@@ -4221,7 +4533,7 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Vagabond Abyssal",
@@ -4230,7 +4542,7 @@
                     etat: ["Sobre"],
                     lieu: ["Désert de givre", "Etendues givrées"],
                     moment: ["Crépuscule"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 },
                 {
                     nom: "Cryosquelette",
@@ -4239,11 +4551,11 @@
                     etat: ["Sobre"],
                     lieu: ["Côtes gelées", "Etendues givrées"],
                     moment: ["Aube", "Journée", "Crépuscule", "Nuit"],
-                    meteo: ["Tout temps"]
+                    meteo: ["Brumeux", "Dégagé", "Neigeux", "Nuageux", "Pluvieux", "Tempêtueux", "Tout temps"]
                 }
                 // Ajoute tes autres poissons ici
             ]
-        };
+        }
 
         // Fonction pour créer des badges de conditions
         function createConditionBadges(conditions) {
@@ -4285,6 +4597,7 @@
             
             saveCaughtFish(caughtFish);
             updateStats(category);
+            updateZoneStats(category); // AJOUTE CETTE LIGNE
             
             // Mettre à jour visuellement la ligne
             const row = document.querySelector(`#tbody-${category} tr[data-index="${index}"]`);
@@ -4309,6 +4622,7 @@
                 
                 const row = document.createElement('tr');
                 row.setAttribute('data-index', index);
+                row.setAttribute('data-original-index', index); // AJOUT ICI
                 if (isCaught) row.classList.add('caught');
                 
                 row.innerHTML = `
@@ -4317,7 +4631,7 @@
                     <td>${f.numero2}</td>
                     <td class="checkbox-container">
                         <input type="checkbox" ${isCaught ? 'checked' : ''} 
-                               onchange="toggleCaught('${category}', ${index})">
+                            onchange="toggleCaught('${category}', ${index})">
                     </td>
                     <td><div class="conditions">${createConditionBadges(f.etat)}</div></td>
                     <td><div class="conditions">${createConditionBadges(f.lieu)}</div></td>
@@ -4329,6 +4643,7 @@
             });
             
             updateStats(category);
+            updateZoneStats(category);
             populateFilters(category);
         }
 
@@ -4350,6 +4665,58 @@
             document.getElementById(`stats-${category}-caught`).textContent = caught;
             document.getElementById(`stats-${category}-total`).textContent = total;
             document.getElementById(`stats-${category}-percent`).textContent = percent + '%';
+        }
+
+        // Mettre à jour les statistiques par zone
+        function updateZoneStats(category) {
+            const fish = fishData[category];
+            const caughtFish = loadCaughtFish();
+            const tbody = document.getElementById(`zone-stats-${category}`);
+            
+            if (!tbody) return; // Si le tbody n'existe pas, ne rien faire
+            
+            // Compter par zone
+            const zoneStats = {};
+            
+            fish.forEach((f, index) => {
+                const key = `${category}-${index}`;
+                const isCaught = caughtFish[key] || false;
+                
+                f.lieu.forEach(lieu => {
+                    if (!zoneStats[lieu]) {
+                        zoneStats[lieu] = { total: 0, caught: 0 };
+                    }
+                    zoneStats[lieu].total++;
+                    if (isCaught) {
+                        zoneStats[lieu].caught++;
+                    }
+                });
+            });
+            
+            // Trier par nom de zone
+            const sortedZones = Object.keys(zoneStats).sort();
+            
+            // Générer le HTML
+            tbody.innerHTML = '';
+            sortedZones.forEach(zone => {
+                const stats = zoneStats[zone];
+                const percent = stats.total > 0 ? Math.round((stats.caught / stats.total) * 100) : 0;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="zone-name">${zone}</td>
+                    <td class="count">${stats.caught}</td>
+                    <td class="count">${stats.total}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%">
+                                ${percent}%
+                            </div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
         // Peupler les filtres
@@ -4401,16 +4768,19 @@
             const meteo = document.getElementById(`filter-${category}-meteo`).value;
             
             const fish = fishData[category];
-            const rows = document.querySelectorAll(`#tbody-${category} tr`);
+            const tbody = document.getElementById(`tbody-${category}`);
+            const rows = tbody.querySelectorAll('tr');
             
-            rows.forEach((row, index) => {
-                const f = fish[index];
+            rows.forEach((row) => {
+                const originalIndex = parseInt(row.getAttribute('data-original-index'));
+                const f = fish[originalIndex];
                 
                 const matchEtat = !etat || f.etat.includes(etat);
                 const matchLieu = !lieu || f.lieu.includes(lieu);
                 const matchMoment = !moment || f.moment.includes(moment);
                 const matchMeteo = !meteo || f.meteo.includes(meteo);
                 
+                // Tous les filtres doivent correspondre pour afficher la ligne
                 if (matchEtat && matchLieu && matchMoment && matchMeteo) {
                     row.classList.remove('hidden');
                 } else {
@@ -4446,29 +4816,74 @@
         }
 
         // Trier le tableau
-        let sortOrder = {};
+        let sortStates = {};
+
         function sortTable(category, columnIndex) {
+            const table = document.getElementById(`table-${category}`);
             const tbody = document.getElementById(`tbody-${category}`);
             const rows = Array.from(tbody.querySelectorAll('tr'));
+            const headers = table.querySelectorAll('thead th');
             
             const key = `${category}-${columnIndex}`;
-            sortOrder[key] = !sortOrder[key];
             
-            rows.sort((a, b) => {
-                let aVal = a.cells[columnIndex].textContent.trim();
-                let bVal = b.cells[columnIndex].textContent.trim();
-                
-                // Conversion en nombre si c'est un numéro
-                if (columnIndex === 1) {
-                    aVal = parseInt(aVal);
-                    bVal = parseInt(bVal);
+            // Gérer l'état de tri
+            if (!sortStates[key]) {
+                sortStates[key] = 'none';
+            }
+            
+            // Cycle: none -> asc -> desc -> none
+            if (sortStates[key] === 'none') {
+                sortStates[key] = 'asc';
+            } else if (sortStates[key] === 'asc') {
+                sortStates[key] = 'desc';
+            } else {
+                sortStates[key] = 'none';
+            }
+            
+            // Mettre à jour les classes CSS des en-têtes
+            headers.forEach((header, idx) => {
+                header.classList.remove('sorted-asc', 'sorted-desc');
+                if (idx === columnIndex) {
+                    if (sortStates[key] === 'asc') {
+                        header.classList.add('sorted-asc');
+                    } else if (sortStates[key] === 'desc') {
+                        header.classList.add('sorted-desc');
+                    }
                 }
-                
-                if (aVal < bVal) return sortOrder[key] ? -1 : 1;
-                if (aVal > bVal) return sortOrder[key] ? 1 : -1;
-                return 0;
             });
             
+            // Si on revient à "none", restaurer l'ordre original
+            if (sortStates[key] === 'none') {
+                rows.sort((a, b) => {
+                    const aIndex = parseInt(a.getAttribute('data-original-index'));
+                    const bIndex = parseInt(b.getAttribute('data-original-index'));
+                    return aIndex - bIndex;
+                });
+            } else {
+                // Trier selon la colonne
+                rows.sort((a, b) => {
+                    let aVal = a.cells[columnIndex].textContent.trim();
+                    let bVal = b.cells[columnIndex].textContent.trim();
+                    
+                    // Colonne "Capturé" (checkbox)
+                    if (columnIndex === 3) {
+                        aVal = a.cells[columnIndex].querySelector('input').checked ? 1 : 0;
+                        bVal = b.cells[columnIndex].querySelector('input').checked ? 1 : 0;
+                    }
+                    // Colonne numérique (N°)
+                    else if (columnIndex === 1) {
+                        aVal = parseInt(aVal);
+                        bVal = parseInt(bVal);
+                    }
+                    
+                    // Comparer
+                    if (aVal < bVal) return sortStates[key] === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortStates[key] === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            
+            // Réorganiser les lignes dans le tableau
             rows.forEach(row => tbody.appendChild(row));
         }
 
@@ -4480,6 +4895,31 @@
             generateTable('bloodlust');
             generateTable('horizon');
         });
+        // Fonctions pour la popup
+        function openPopup() {
+            document.getElementById('infoPopup').classList.add('active');
+        }
+
+        function closePopup(event) {
+            // Fermer seulement si on clique sur l'overlay ou le bouton close
+            if (!event || event.target.id === 'infoPopup' || event.target.classList.contains('popup-close')) {
+                document.getElementById('infoPopup').classList.remove('active');
+            }
+        }
+
+        // Fermer avec la touche Échap
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+
+        console.log('Standard fish count:', fishData.standard.length);
+        console.log('Summer fish count:', fishData.summer.length);
+        console.log('Halloween fish count:', fishData.halloween.length);
+        console.log('Bloodlust fish count:', fishData.bloodlust.length);
+        console.log('Horizon fish count:', fishData.horizon.length);
+
     </script>
 </body>
 </html>
